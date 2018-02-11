@@ -4,6 +4,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -77,16 +80,36 @@ public class Calc {
 
 	private static void runCalculation(Calculation calc) {
 		//			calc.getProgram().forEach(n-> out("  " + n.toString()));
+		if (calc == null)
+			return;
 		try {
 			BigDecimal res = calc.evaluate(context);
 			if (calc.getResultVar() != null) {
 				context.setVar(calc.getResultVar(), res);
-				out(calc.getResultVar() + " := " + calc.evaluate(context));
+				out(calc.getResultVar() + " := " + formatResult(context, calc.evaluate(context)));
 			} else {
-				out("Result: " + calc.evaluate(context));
+				out("Result: " + formatResult(context, calc.evaluate(context)));
 			}
 		} catch (Throwable th) {
 			err(th);
+		}
+	}
+
+	private static String formatResult(Context ctx, BigDecimal r) {
+		if (ctx.isStdForm()) {
+			//
+			// Divide by scale to get back to 0..10 and put the exponent on the end
+			//
+			NumberFormat formatter = new DecimalFormat("0.0E0");
+			formatter.setRoundingMode(RoundingMode.HALF_UP);
+			formatter.setMinimumFractionDigits(12);
+			return formatter.format(r).toLowerCase();
+		} else {
+			if (r.precision() - r.scale() <= 0) {// not an integer 
+				return r.toString();
+			} else {
+				return r.toBigIntegerExact().toString(ctx.getBase());
+			}
 		}
 	}
 
@@ -105,8 +128,9 @@ public class Calc {
 				out("");
 				out("   :help  (:?)   Show this");
 				out("   :quit  (:q)   Exit");
-				out("   :hex   (:h)   Switch to Base 16 display ");
+				out("   :hex   (:h)   Switch to Base 16 display (only for Integers)");
 				out("   :dec   (:d)   Switch to Base 10 display (Default)");
+				out("   :sci   (:s)   Switch to Standard Form");
 				out("");
 				out("   Enter an expression to evaluate it.");
 				out("");
@@ -122,10 +146,18 @@ public class Calc {
 
 			} else if ("h".equals(t.getValue()) || "hex".equals(t.getValue())) {
 				context.setBase(16);
-				out("Output in Base 16");
+				context.setStdForm(false);
+				out("[Output in Base 16]");
+				runCalculation(lastCalculation);
 			} else if ("d".equals(t.getValue()) || "dec".equals(t.getValue())) {
 				context.setBase(10);
-				out("Output in Base 10");
+				context.setStdForm(false);
+				out("[Output in Base 10]");
+				runCalculation(lastCalculation);
+			} else if ("s".equals(t.getValue()) || "sci".equals(t.getValue())) {
+				context.setStdForm(true);
+				out("[Output in Standard Form]");
+				runCalculation(lastCalculation);
 			}
 		} catch (Throwable th) {
 			err(th);

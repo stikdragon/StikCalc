@@ -10,6 +10,7 @@ public class Context {
 
 	private Map<String, BigDecimal>	vars	= new HashMap<>();
 	private int						base	= 10;
+	private boolean					standardForm;
 
 	public int getBase() {
 		return base;
@@ -35,5 +36,13 @@ public class Context {
 
 	public void setBase(int n) {
 		this.base = n;
+	}
+
+	public void setStdForm(boolean b) {
+		this.standardForm = b;
+	}
+
+	public boolean isStdForm() {
+		return standardForm;
 	}
 }

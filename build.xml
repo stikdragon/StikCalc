@@ -1,0 +1,53 @@
+<project xmlns:ivy="antlib:org.apache.ivy.ant">
+
+	<property name="version" value="1.1" />
+	<property name="launch4j.dir" value="G:/java/Resources/Launch4J" />
+
+	<path id="compile.classpath">
+		<fileset dir="lib/provided">
+			<include name="**/*.jar" />
+		</fileset>
+		<fileset dir="lib/java">
+			<include name="**/*.jar" />
+		</fileset>
+		<pathelement location="bin" />
+	</path>
+
+	<target name="clean">
+		<delete dir="build" />
+	</target>
+
+	<target name="resolve" description="retrieve dependencies with ivy">
+		<ivy:retrieve pattern="lib/[conf]/[artifact](-[classifier])-[revision].[ext]" />
+	</target>
+
+	<target name="compile" description="Compile" depends="resolve">
+		<javac destdir="bin" debug="off" source="1.8" includeantruntime="false">
+			<src path="src" />
+			<classpath refid="compile.classpath" />
+		</javac>
+	</target>
+
+	<target name="jar" description="Make JAR" depends="resolve,compile">
+		<jar destfile="dist/StikCalc-${version}.jar" basedir="bin">
+			<manifest>
+				<attribute name="Main-Class" value="uk.co.stikman.calc.Calc" />
+			</manifest>
+		</jar>
+	</target>
+
+	<!-- if you want to use this you'll have to make sure the ${launch4j.dir} property
+	     at the top of this file is set to an unpacked version of Launch4J.  I don't think
+	     the specific version is important, whatever the latest release is frmo their 
+	     website -->
+	<target name="exe" description="Use Launch4J to make an EXE" depends="jar">
+		<taskdef name="launch4j" classname="net.sf.launch4j.ant.Launch4jTask" classpath="${launch4j.dir}/launch4j.jar:${launch4j.dir}/lib/xstream.jar" />
+		<launch4j>
+			<config headerType="console" jar="dist/StikCalc-${version}.jar" outfile="dist/StikCalc-${version}.exe" errTitle="StikCalc" chdir="." icon="res/stikcalc.ico">
+				<jre minVersion="1.7.0" />
+			</config>
+		</launch4j>
+	</target>
+
+
+</project>

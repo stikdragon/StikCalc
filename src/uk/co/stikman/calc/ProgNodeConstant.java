@@ -21,7 +21,7 @@ public class ProgNodeConstant extends ProgNode {
 
 	@Override
 	public void execute(Deque<BigDecimal> stack, Context context) {
-		stack.add(value);
+		stack.push(value);
 	}
 
 }

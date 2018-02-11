@@ -1,0 +1,5 @@
+<ivy-module version="2.0">
+	<info organisation="uk.co.stikman" module="calc" />
+	<dependencies>
+	</dependencies>
+</ivy-module>

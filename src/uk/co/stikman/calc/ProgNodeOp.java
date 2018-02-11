@@ -29,41 +29,51 @@ public class ProgNodeOp extends ProgNode {
 		BigDecimal a;
 		BigDecimal b;
 		switch (type) {
-		case DIVIDE:
-			a = stack.pop();
-			b = stack.pop();
-			int s = Math.max(a.scale(), b.scale());
-			stack.push(a.divide(b, s + 100, RoundingMode.HALF_EVEN).stripTrailingZeros());
-			break;
-		case MINUS:
-			a = stack.pop();
-			b = stack.pop();
-			stack.push(a.subtract(b));
-			break;
-		case MULTIPLY:
-			a = stack.pop();
-			b = stack.pop();
-			stack.push(a.multiply(b));
-			break;
-		case PLUS:
-			a = stack.pop();
-			b = stack.pop();
-			stack.push(a.add(b));
-			break;
-		case UNARY_MINUS:
-			a = stack.pop();
-			stack.push(a.multiply(new BigDecimal(-1)));
-			break;
-		case UNARY_PLUS:
-			break;
-		case POWER:
-			a = stack.pop(); // TODO: this is converting to a java double, so losing precision
-			b = stack.pop();
-			stack.push(new BigDecimal(Math.pow(a.doubleValue(), b.doubleValue())));
-			break;
+			case DIVIDE:
+				b = stack.pop();
+				a = stack.pop();
+				int s = Math.max(a.scale(), b.scale());
+				stack.push(a.divide(b, s + 100, RoundingMode.HALF_EVEN).stripTrailingZeros());
+				break;
+			case MINUS:
+				b = stack.pop();
+				a = stack.pop();
+				stack.push(a.subtract(b));
+				break;
+			case MULTIPLY:
+				b = stack.pop();
+				a = stack.pop();
+				stack.push(a.multiply(b));
+				break;
+			case PLUS:
+				b = stack.pop();
+				a = stack.pop();
+				stack.push(a.add(b));
+				break;
+			case UNARY_MINUS:
+				a = stack.pop();
+				stack.push(a.multiply(new BigDecimal(-1)));
+				break;
+			case UNARY_PLUS:
+				break;
+			case POWER:
+				b = stack.pop();
+				a = stack.pop();
 
-		default:
-			throw new RuntimeException("Unknown op: " + type);
+				//
+				// If it's an integer then we can use BigDecimal's pow(int) function.  If
+				// not then it's harder and i'm just going to convert back to a double for now
+				//
+				if (b.precision() - b.scale() <= 0) {
+					// TODO: this is converting to a java double, so losing precision
+					stack.push(new BigDecimal(Math.pow(a.doubleValue(), b.doubleValue())));
+				} else {
+					stack.push(a.pow(b.intValueExact()));
+				}
+				break;
+
+			default:
+				throw new RuntimeException("Unknown op: " + type);
 		}
 	}
 

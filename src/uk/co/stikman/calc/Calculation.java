@@ -158,10 +158,12 @@ public class Calculation {
 			break;
 
 		case PLUS:
+			parseOperand(iter);
 			program.add(new ProgNodeOp(OpType.UNARY_PLUS));
 			break;
 
 		case MINUS:
+			parseOperand(iter);
 			program.add(new ProgNodeOp(OpType.UNARY_MINUS));
 			break;
 
